@@ -1,12 +1,12 @@
-const BuiltinHelper = require('./BuiltinHelper');
-const WebHelper = require('./WebHelper');
+const BuiltinHelper = require("./BuiltinHelper");
+const WebHelper = require("./WebHelper");
 
-const _Asset = require('./Asset');
-const _AssetType = require('./AssetType');
-const _DataFormat = require('./DataFormat');
+const _Asset = require("./Asset");
+const _AssetType = require("./AssetType");
+const _DataFormat = require("./DataFormat");
 
 class ScratchStorage {
-    constructor () {
+    constructor() {
         this.defaultAssetId = {};
 
         this.builtinHelper = new BuiltinHelper(this);
@@ -16,12 +16,12 @@ class ScratchStorage {
         this._helpers = [
             {
                 helper: this.builtinHelper,
-                priority: 100
+                priority: 100,
             },
             {
                 helper: this.webHelper,
-                priority: -100
-            }
+                priority: -100,
+            },
         ];
     }
 
@@ -29,7 +29,7 @@ class ScratchStorage {
      * @return {Asset} - the `Asset` class constructor.
      * @constructor
      */
-    get Asset () {
+    get Asset() {
         return _Asset;
     }
 
@@ -37,7 +37,7 @@ class ScratchStorage {
      * @return {AssetType} - the list of supported asset types.
      * @constructor
      */
-    get AssetType () {
+    get AssetType() {
         return _AssetType;
     }
 
@@ -45,7 +45,7 @@ class ScratchStorage {
      * @return {DataFormat} - the list of supported data formats.
      * @constructor
      */
-    get DataFormat () {
+    get DataFormat() {
         return _DataFormat;
     }
 
@@ -54,7 +54,7 @@ class ScratchStorage {
      * @return {Asset} - the `Asset` class constructor.
      * @constructor
      */
-    static get Asset () {
+    static get Asset() {
         return _Asset;
     }
 
@@ -63,7 +63,7 @@ class ScratchStorage {
      * @return {AssetType} - the list of supported asset types.
      * @constructor
      */
-    static get AssetType () {
+    static get AssetType() {
         return _AssetType;
     }
 
@@ -74,9 +74,10 @@ class ScratchStorage {
      * @param {Helper} helper - the helper to be added.
      * @param {number} [priority] - the priority for this new helper (default: 0).
      */
-    addHelper (helper, priority = 0) {
-        this._helpers.push({helper, priority});
+    addHelper(helper, priority = 0) {
+        this._helpers.push({ helper, priority });
         this._helpers.sort((a, b) => b.priority - a.priority);
+        console.log(`WOW HELPERS::: ${this._helpers}`);
     }
 
     /**
@@ -84,7 +85,7 @@ class ScratchStorage {
      * @param {string} assetId - The id of the asset to fetch.
      * @returns {?Asset} The asset, if it exists.
      */
-    get (assetId) {
+    get(assetId) {
         return this.builtinHelper.get(assetId);
     }
 
@@ -96,7 +97,7 @@ class ScratchStorage {
      * @param {string} id - The id for the cached asset.
      * @returns {string} The calculated id of the cached asset, or the supplied id if the asset is mutable.
      */
-    cache (assetType, dataFormat, data, id) {
+    cache(assetType, dataFormat, data, id) {
         return this.builtinHelper._store(assetType, dataFormat, data, id);
     }
 
@@ -109,8 +110,9 @@ class ScratchStorage {
      * @param {bool} [generateId] - flag to set id to an md5 hash of data if `id` isn't supplied
      * @returns {Asset} generated Asset with `id` attribute set if not supplied
      */
-    createAsset (assetType, dataFormat, data, id, generateId) {
-        if (!dataFormat) throw new Error('Tried to create asset without a dataFormat');
+    createAsset(assetType, dataFormat, data, id, generateId) {
+        if (!dataFormat)
+            throw new Error("Tried to create asset without a dataFormat");
         return new _Asset(assetType, id, dataFormat, data, generateId);
     }
 
@@ -121,8 +123,13 @@ class ScratchStorage {
      * @param {UrlFunction} createFunction - A function which computes a POST URL for asset data.
      * @param {UrlFunction} updateFunction - A function which computes a PUT URL for asset data.
      */
-    addWebStore (types, getFunction, createFunction, updateFunction) {
-        this.webHelper.addStore(types, getFunction, createFunction, updateFunction);
+    addWebStore(types, getFunction, createFunction, updateFunction) {
+        this.webHelper.addStore(
+            types,
+            getFunction,
+            createFunction,
+            updateFunction,
+        );
     }
 
     /**
@@ -131,7 +138,7 @@ class ScratchStorage {
      * @param {Array.<AssetType>} types - The types of asset provided by this source.
      * @param {UrlFunction} urlFunction - A function which computes a GET URL from an Asset.
      */
-    addWebSource (types, urlFunction) {
+    addWebSource(types, urlFunction) {
         this.addWebStore(types, urlFunction);
     }
 
@@ -140,8 +147,10 @@ class ScratchStorage {
      * @param {AssetType} type - Get the default ID for assets of this type.
      * @return {?string} The ID of the default asset of the given type, if any.
      */
-    getDefaultAssetId (type) {
-        if (Object.prototype.hasOwnProperty.call(this.defaultAssetId, type.name)) {
+    getDefaultAssetId(type) {
+        if (
+            Object.prototype.hasOwnProperty.call(this.defaultAssetId, type.name)
+        ) {
             return this.defaultAssetId[type.name];
         }
     }
@@ -154,7 +163,7 @@ class ScratchStorage {
      * @param {AssetType} type - The type of asset for which the default will be set.
      * @param {string} id - The default ID to use for this type of asset.
      */
-    setDefaultAssetId (type, id) {
+    setDefaultAssetId(type, id) {
         this.defaultAssetId[type.name] = id;
     }
 
@@ -169,16 +178,17 @@ class ScratchStorage {
      *   If the promise is rejected, there was an error on at least one asset source. HTTP 404 does not count as an
      *   error here, but (for example) HTTP 403 does.
      */
-    load (assetType, assetId, dataFormat) {
+    load(assetType, assetId, dataFormat) {
         /** @type {Helper[]} */
-        const helpers = this._helpers.map(x => x.helper);
+        const helpers = this._helpers.map((x) => x.helper);
         const errors = [];
         dataFormat = dataFormat || assetType.runtimeFormat;
 
         let helperIndex = 0;
         let helper;
-        const tryNextHelper = err => {
-            if (err) { // Track the error, but continue looking
+        const tryNextHelper = (err) => {
+            if (err) {
+                // Track the error, but continue looking
                 errors.push(err);
             }
 
@@ -190,9 +200,11 @@ class ScratchStorage {
                     return tryNextHelper();
                 }
                 // Note that other attempts may have logged errors; if this succeeds they will be suppressed.
-                return loading
-                    // TODO: maybe some types of error should prevent trying the next helper?
-                    .catch(tryNextHelper);
+                return (
+                    loading
+                        // TODO: maybe some types of error should prevent trying the next helper?
+                        .catch(tryNextHelper)
+                );
             } else if (errors.length > 0) {
                 // We looked through all the helpers and couldn't find the asset, AND
                 // at least one thing went wrong while we were looking.
@@ -214,16 +226,21 @@ class ScratchStorage {
      * @param {?string} [assetId] - The ID of the asset to fetch: a project ID, MD5, etc.
      * @return {Promise.<object>} A promise for asset metadata
      */
-    store (assetType, dataFormat, data, assetId) {
+    store(assetType, dataFormat, data, assetId) {
         dataFormat = dataFormat || assetType.runtimeFormat;
-        return new Promise(
-            (resolve, reject) =>
-                this.webHelper.store(assetType, dataFormat, data, assetId)
-                    .then(body => {
-                        this.builtinHelper._store(assetType, dataFormat, data, body.id);
-                        return resolve(body);
-                    })
-                    .catch(error => reject(error))
+        return new Promise((resolve, reject) =>
+            this.webHelper
+                .store(assetType, dataFormat, data, assetId)
+                .then((body) => {
+                    this.builtinHelper._store(
+                        assetType,
+                        dataFormat,
+                        data,
+                        body.id,
+                    );
+                    return resolve(body);
+                })
+                .catch((error) => reject(error)),
         );
     }
 }

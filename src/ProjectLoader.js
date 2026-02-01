@@ -1,6 +1,7 @@
 /* eslint-env browser */
 
 const saferFetchAsArrayBuffer = require("./safer-fetch");
+const pmp_protobuf = require("pmp-protobuf");
 
 /**
  * Get and send assets with the fetch standard web api.
@@ -26,8 +27,10 @@ class FetchTool {
             Object.assign({ method: "GET" }, options),
         ).then((arrayBufferOrNull) => {
             if (arrayBufferOrNull) {
-                console.log(arrayBufferOrNull);
-                return new Uint8Array(arrayBufferOrNull);
+                let json_obj = pmp_protobuf.protobufToJson(
+                    new Uint8Array(arrayBufferOrNull),
+                );
+                return new TextEncoder().encode(JSON.stringify(json_obj));
             }
             return arrayBufferOrNull;
         });
@@ -48,20 +51,7 @@ class FetchTool {
      * @returns {Promise.<string>} Server returned metadata.
      */
     send({ url, withCredentials = false, ...options }) {
-        throw new Error("Send is unsupported");
-
-        return fetch(
-            url,
-            Object.assign(
-                {
-                    credentials: withCredentials ? "include" : "omit",
-                },
-                options,
-            ),
-        ).then((response) => {
-            if (response.ok) return response.text();
-            return Promise.reject(response.status);
-        });
+        throw new Error("we dont send in the editor!");
     }
 }
 

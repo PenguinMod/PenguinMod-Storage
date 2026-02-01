@@ -1,5 +1,5 @@
-const FetchWorkerTool = require('./FetchWorkerTool');
-const FetchTool = require('./FetchTool');
+const FetchWorkerTool = require("./FetchWorkerTool");
+const FetchTool = require("./FetchTool");
 
 /**
  * @typedef {object} Request
@@ -12,28 +12,21 @@ const FetchTool = require('./FetchTool');
 /**
  * Get and send assets with other tools in sequence.
  */
-class ProxyTool {
-    constructor (filter = ProxyTool.TOOL_FILTER.ALL) {
-        let tools;
-        if (filter === ProxyTool.TOOL_FILTER.READY) {
-            tools = [new FetchTool()];
-        } else {
-            tools = [new FetchWorkerTool(), new FetchTool()];
-        }
-
+class AssetLoader {
+    constructor() {
         /**
          * Sequence of tools to proxy.
          * @type {Array.<Tool>}
          */
-        this.tools = tools;
+        this.tools = [new FetchWorkerTool(), new FetchTool()];
     }
 
     /**
      * Is get supported? false if all proxied tool return false.
      * @returns {boolean} Is get supported?
      */
-    get isGetSupported () {
-        return this.tools.some(tool => tool.isGetSupported);
+    get isGetSupported() {
+        return this.tools.some((tool) => tool.isGetSupported);
     }
 
     /**
@@ -41,9 +34,9 @@ class ProxyTool {
      * @param {Request} reqConfig - Request configuration for data to get.
      * @returns {Promise.<Buffer>} Resolve to Buffer of data from server.
      */
-    get (reqConfig) {
+    get(reqConfig) {
         let toolIndex = 0;
-        const nextTool = err => {
+        const nextTool = (err) => {
             const tool = this.tools[toolIndex++];
             if (!tool) {
                 throw err;
@@ -60,8 +53,8 @@ class ProxyTool {
      * Is sending supported? false if all proxied tool return false.
      * @returns {boolean} Is sending supported?
      */
-    get isSendSupported () {
-        return this.tools.some(tool => tool.isSendSupported);
+    get isSendSupported() {
+        return this.tools.some((tool) => tool.isSendSupported);
     }
 
     /**
@@ -69,9 +62,9 @@ class ProxyTool {
      * @param {Request} reqConfig - Request configuration for data to send.
      * @returns {Promise.<Buffer|string|object>} Server returned metadata.
      */
-    send (reqConfig) {
+    send(reqConfig) {
         let toolIndex = 0;
-        const nextTool = err => {
+        const nextTool = (err) => {
             const tool = this.tools[toolIndex++];
             if (!tool) {
                 throw err;
@@ -89,16 +82,16 @@ class ProxyTool {
  * Constant values that filter the set of tools in a ProxyTool instance.
  * @enum {string}
  */
-ProxyTool.TOOL_FILTER = {
+AssetLoader.TOOL_FILTER = {
     /**
      * Use all tools.
      */
-    ALL: 'all',
+    ALL: "all",
 
     /**
      * Use tools that are ready right now.
      */
-    READY: 'ready'
+    READY: "ready",
 };
 
-module.exports = ProxyTool;
+module.exports = AssetLoader;
