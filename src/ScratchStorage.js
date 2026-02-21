@@ -77,7 +77,6 @@ class ScratchStorage {
     addHelper(helper, priority = 0) {
         this._helpers.push({ helper, priority });
         this._helpers.sort((a, b) => b.priority - a.priority);
-        console.log(`WOW HELPERS::: ${this._helpers}`);
     }
 
     /**
